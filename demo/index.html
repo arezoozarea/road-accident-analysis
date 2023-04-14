@@ -154,6 +154,8 @@
 
         }
 
+        const CHART_HEIGHT = "300px";
+
         function renderPieChart(elementId, data) {
             const chart = new Chart(document.getElementById(elementId), {
                 type: "doughnut",
@@ -182,7 +184,7 @@
                     }
                 }
             });
-            chart.canvas.parentNode.style.height = '300px';
+            chart.canvas.parentNode.style.height = CHART_HEIGHT;
         }
 
         function renderBarChart(elementId, themeColor, labels, data) {
@@ -213,7 +215,8 @@
                             stacked: false,
                             ticks: {
                                 // stepSize: 200,
-                                fontFamily: 'Vazirmatn'
+                                // fontFamily: 'Vazirmatn',
+                                padding: 50
                             }
                         }],
                         xAxes: [{
@@ -235,7 +238,8 @@
                     }
                 }
             });
-            chart.canvas.parentNode.style.height = '300px';
+            chart.canvas.parentNode.style.height = CHART_HEIGHT;
+            console.log(chart.version)
         }
 
         function handleLoad() {
@@ -265,10 +269,10 @@
 
             renderPieChart('total_accident_statistics', {"std": 169.52, "median": 109.0, "mean": 171.4});
             renderPieChart('total_injured_statistics', {"mean": 1.281, "std": 1.744, "median": 1.0});
-            renderBarChart('total_accident_by_vehicle_name', window.theme.primary, ['برخورد با حیوان', 'برخورد با عابر', 'برخورد جلو به جلو',
+            renderBarChart('most_Collision_Shape_Title', window.theme.warning, ['برخورد با حیوان', 'برخورد با عابر', 'برخورد جلو به جلو',
                 'برخورد جلو به عقب', 'برخورد پهلو به پهلو', 'برخوردجلو به پهلو',
                 'خروج از محور', 'خروج از محور و سقوط', 'واژگونی در محور'], [31, 185, 955, 1638, 122, 706, 1285, 497, 1258]);
-            renderBarChart('most_Collision_Shape_Title', window.theme.warning, ['سواری', 'سواری , وانت', 'وانت', 'سواری , كامیون', 'تریلر', 'كامیون',
+            renderBarChart('total_accident_by_vehicle_name', window.theme.primary, ['سواری', 'سواری , وانت', 'وانت', 'سواری , كامیون', 'تریلر', 'كامیون',
                 'سواری , تریلر', 'سواری , موتور سیكلت', 'سواری , كامیونت',
                 'موتور سیكلت'], [3500, 343, 301, 239, 234, 205, 192, 178, 106, 105]);
         }
