@@ -175,9 +175,6 @@
         const roads = await runRoadsQuery();
         const dangerousPoints = await runDangerousPointsQuery();
 
-
-        console.log(dangerousPoints.features.length)
-
         map = new mapboxgl.Map({
             container: 'map',
             style: 'https://api.parsimap.ir/styles/parsimap-streets-v11?key=ac3fed7ee26d424e9781400f4106dd38',
