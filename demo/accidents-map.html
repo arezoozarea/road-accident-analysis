@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="Road Accident Data Analysis">
+	<meta name="keywords"
+				content="Road Accident Data Analysis, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png"/>
+
+	<link rel="canonical" href="https://demo-basic.Road Accident Data Analysis.io/pages-blank.html"/>
+
+	<title>Accidents Map | Road Accident Data Analysis</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://cdn.parsimap.ir/third-party/mapbox-gl-js/v1.13.0/mapbox-gl.js"></script>
+	<link href="./assets/css/fontawesome.css" rel="stylesheet">
+	<link href="./assets/css/brands.css" rel="stylesheet">
+	<link href="./assets/css/solid.css" rel="stylesheet">
+	<link
+		href="https://cdn.parsimap.ir/third-party/mapbox-gl-js/v1.13.0/mapbox-gl.css"
+		rel="stylesheet"
+	/>
+	<style>
+      .card {
+          height: 100%;
+      }
+
+      .map {
+          height: 100%;
+          width: 100%;
+      }
+
+      .container-fluid {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+      }
+
+      .row {
+          flex: 1;
+      }
+
+      .extra-info {
+          font-size: 11px;
+          color: grey;
+          font-weight: lighter;
+      }
+	</style>
+</head>
+
+<body>
+<div class="wrapper">
+	<nav id="sidebar" class="sidebar js-sidebar">
+		<div class="sidebar-content js-simplebar">
+			<a class="sidebar-brand" href="index.html">
+				<span class="align-middle">Road Accident Data Analysis</span>
+			</a>
+
+			<ul class="sidebar-nav">
+				<li class="sidebar-header">
+					Pages
+				</li>
+
+				<li class="sidebar-item">
+					<a class="sidebar-link" href="index.html">
+						<i class='fa-solid fa-chart-line'></i>
+						<span class="align-middle">Charts</span>
+					</a>
+				</li>
+
+				<li class="sidebar-item">
+					<a class="sidebar-link" href="data-table.html">
+						<i class="fas fa-database"></i> <span class="align-middle">Data Table</span>
+					</a>
+				</li>
+
+				<li class="sidebar-item active">
+					<a class="sidebar-link" href="accidents-map.html">
+						<i class="fas fa-map-marker-alt"></i> <span class="align-middle">Accidents Map</span>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="main">
+		<main class="content p-3">
+			<div class="container-fluid">
+				<div class="d-flex flex-row">
+					<a class="sidebar-toggle js-sidebar-toggle">
+						<i class="hamburger align-self-center"></i>
+					</a>
+					<div class="d-flex flex-row align-items-center mb-3">
+						<h1 class="h3 me-1">Accidents Map</h1>
+						<i class="fab fa-github fa-2x text-primary"></i>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<div class="card">
+							<div class="card-header">
+								<div class="d-flex flex-row align-items-center mb-2">
+									<h5 class="card-title mb-0 me-1">Layers</h5>
+									<div
+										class="extra-info">(zoom in to see dangerous point)
+									</div>
+								</div>
+								<div class="d-flex flex-row gap-2 align-items-center">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" value="" id="dangerous_points" checked
+													 onchange="handleCheckChange(event)">
+										<label class="form-check-label" for="dangerous_points">
+											Dangerous Points
+										</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" value="" id="roads" checked
+													 onchange="handleCheckChange(event)">
+										<label class="form-check-label" for="roads">
+											Dangerous Roads
+										</label>
+									</div>
+								</div>
+
+							</div>
+							<div class="card-body p-0">
+								<div id="map" class="map"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</main>
+	</div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+    let map;
+    mapboxgl.setRTLTextPlugin(
+        'https://cdn.parsimap.ir/third-party/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
+        null,
+    )
+
+    async function runDangerousPointsQuery() {
+        const res = await fetch("./data/dangerous_points_geojson.json");
+        return await res.json()
+    }
+
+    async function runRoadsQuery() {
+        const res = await fetch("./data/roads_geojson.json");
+        return await res.json()
+    }
+
+    function handleCheckChange(e) {
+        const visible = e.target.checked ? "visible" : "none";
+        if (e.target.id === "roads") {
+            map.setLayoutProperty('road', 'visibility', visible);
+            map.setLayoutProperty('road-outline', 'visibility', visible);
+        } else {
+            map.setLayoutProperty('dangerous-point', 'visibility', visible);
+        }
+    }
+
+    async function main() {
+        const roads = await runRoadsQuery();
+        const dangerousPoints = await runDangerousPointsQuery();
+
+
+        console.log(dangerousPoints.features.length)
+
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'https://api.parsimap.ir/styles/parsimap-streets-v11?key=ac3fed7ee26d424e9781400f4106dd38',
+            center: [51.10, 35.71],
+            zoom: 5,
+        });
+        map.on("style.load", function () {
+            map.addSource("roads", {type: "geojson", data: roads});
+            map.addSource("dangerous_points", {type: "geojson", data: dangerousPoints});
+
+
+            map.loadImage("./assets/images/clipboard_vectorized.png", (err, imageData) => {
+                map.addImage("dangerous_point", imageData)
+
+            })
+            map.addLayer({
+                id: "dangerous-point",
+                type: 'symbol',
+                source: "dangerous_points",
+                paint: {
+                    // "circle-radius": 7,
+                    // "circle-color": '#9c27b0',
+                },
+                layout: {
+                    'icon-size': .15,
+                    'icon-image': "dangerous_point",
+                    // 'icon-offset': [-100,60],
+                    'icon-anchor': 'bottom-left',
+                    'icon-allow-overlap': false
+                }
+            })
+            map.setLayerZoomRange('dangerous-point', 6, 22);
+
+            map.addLayer({
+                id: "road-outline",
+                type: 'line',
+                source: "roads",
+                paint: {
+                    'line-width': 4,
+                    'line-color': "black"
+                }
+            })
+            map.addLayer({
+                id: "road",
+                type: 'line',
+                source: "roads",
+                paint: {
+                    'line-width': 4,
+                    'line-color': [
+                        'interpolate', ['linear'],
+                        ['number', ['get', 'accident_count']],
+                        0, '#fdc87b',
+                        100, '#ff5900',
+                        200, '#b70000'
+                    ]
+                }
+            })
+            // map.addLayer({
+            //     id: "dangerous-point-outline",
+            //     type: 'circle',
+            //     source: "dangerous_points",
+            //     paint: {
+            //         "circle-radius": 8,
+            //     }
+            // })
+
+        });
+    }
+
+    main();
+</script>
+</body>
+
+</html>
