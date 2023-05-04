@@ -14,11 +14,17 @@ df = pd.read_csv("../data/final_accident_points.csv")
 # The total number of accidents are calculated through the count of a column (OBJECTID) of the read CSV file.
 total_Accident = df.OBJECTID.count()
 
-# The total number of accidents are calculated through the sum up of KilledNumber column of the read CSV file,
+# The total number of kills are calculated through the sum up of KilledNumber column of the read CSV file,
 # this column is also included as an integer number in the field.
 total_killed_number = df.KilledNumber.sum()
+
+# The total number of Injures are calculated through the sum up of KilledNumber column of the read CSV file,
+# this column is also included as an integer number in the field.
 total_injured_number = df.InjuredNumber.sum()
 
+# The final result is a data of JSON type which is ready to developed in the client-side. This data are used as
+# specific card views in the charts page or default page of the website. The location of those are after the header
+# of the website.
 data = json.dumps({
     "total_Accident": int(total_Accident),
     "total_killed_number": int(total_killed_number),
