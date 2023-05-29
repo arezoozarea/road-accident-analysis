@@ -1,0 +1,125 @@
+import json
+
+import pandas as pd
+import geojson
+
+
+df = pd.read_csv(r"C:\Users\a.zare\Desktop\141\141_road_data\final_accident_points.csv")
+----------------------------------------------------
+# General data
+total_Accident = df.OBJECTID.count()
+total_killed_number = df.KilledNumber.sum()
+total_injured_number = df.InjuredNumber.sum()
+
+json.dumps({
+     "total_Accident": int(total_Accident),
+     "total_killed_number": int(total_killed_number),
+     'total_injured_number': int(total_injured_number)
+ }))
+----------------------------------------------------
+# charts
+
+total_Accident_by_province = df.groupby("ProvinceName").road_id.count().sort_values(ascending=False)
+keys = total_Accident_by_province.keys()
+values = total_Accident_by_province.values
+
+most_Collision_Shape_Title = df.groupby("CollisionShapeTitle").CollisionShapeTitle.count()
+
+total_accident_by_road_chart = df.groupby(["road_search_name"]).road_id.count().sort_values(ascending=False).head(10)
+
+
+total_accident_by_vehicle_name = df.groupby("VehicleTypeNames").VehicleTypeNames.count().sort_values(
+    ascending=False).head(10)
+total_accident_statistics = total_accident_by_road_chart.agg({"mean", "median", "std"})
+total_InjuredNumber_statistics = df.InjuredNumber.agg({"mean", "median", "std"})
+total_KilledNumber_statistics = df.KilledNumber.agg({"mean", "median", "std"})
+-----------------------------------------------------------
+# tables according to roads data
+
+total_accident_by_road = df.groupby(["road_search_name"]).road_id.count().sort_values(ascending=False)
+
+with open("./out/temp/total_accident_by_road.json", "w", encoding="utf8") as f:
+    f.write("[")
+    for road_name, count in total_accident_by_road.items():
+        f.write(f'["{road_name}", {count}],')
+    f.write("]")
+
+
+injured_number_by_road = df.groupby(["road_search_name"]).InjuredNumber.sum().sort_values(ascending=False)
+
+killed_number_by_road = df.groupby(["road_search_name"]).KilledNumber.sum().sort_values(
+    ascending=False).head(100)
+
+with open("./out/temp/killed_number_by_road.json", "w", encoding="utf8") as f:
+    f.write('{"columns":[{"title":"road_name"},{"title":"count"}],"dataset":[')
+    for road_name, count in killed_number_by_road.items():
+        f.write(f'["{road_name}", {count}],')
+    f.write("]}")
+
+
+accident_by_CollisionShapeTitle = df.groupby("road_id", as_index=False).agg(
+    road_id=("road_search_name", "first"), collision_count=("CollisionShapeTitle", "count"), CollisionShapeTitle=(
+        "CollisionShapeTitle", "first")).sort_values(
+    ["collision_count", "CollisionShapeTitle"], ascending=False)
+
+with open("./out/temp/accident_by_CollisionShapeTitle.json", "w", encoding="utf8") as f:
+    f.write('{"columns":[{"title":"lat"},{"title":"lng"},{"title":"road_name"},{"title":"count"}],"dataset":[')
+    for i in accident_by_CollisionShapeTitle.index:
+        a, b, c, = accident_by_CollisionShapeTitle.loc[i]
+        f.write(f'["{a}", {b}, "{c}",],')
+    f.write("]}")
+
+accident_by_dangerous_points = df.groupby(["lat", "lng"], as_index=False).agg(
+    road_search_name=(
+        "road_search_name", "first"),
+    lng_count=("lng", "count")
+).sort_values(
+    ["lng_count"], ascending=False)
+
+
+with open("./out/temp/accint_by_dangerous_points.json", "w", encoding="utf8") as f:
+    f.write('{"columns":[{"title":"lat"},{"title":"lng"},{"title":"road_name"},{"title":"count"}],"dataset":[')
+    for i in accident_by_dangerous_points.index:
+        a, b, c, d = accident_by_dangerous_points.loc[i]
+        f.write(f'[{a}, {b}, "{c}",{d}],')
+    f.write("]}")
+
+total_accident_by_vehicle_name = df.groupby("road_id", as_index=False).agg(
+    road_search_name=("road_search_name", "first"), vehicle_count=("VehicleTypeNames", "count"),
+    VehicleNames=("VehicleTypeNames", "first")).sort_values(["VehicleNames", "vehicle_count"], ascending=False)
+
+
+with open("./out/temp/total_accident_by_vehicle_name.json", "w", encoding="utf8") as f:
+    f.write('{"columns":[{"title":"road_name"},{"title":"count"},{"title":"shape"}],"dataset":[')
+    for i in total_accident_by_vehicle_name.index:
+        row = total_accident_by_vehicle_name.loc[i]
+        f.write(f'["{row.road_search_name}", {row.vehicle_count}, "{row.VehicleNames}"],')
+    f.write("]}")
+
+-------------------------------------------------------------
+# create json files to visualization
+def dangerous_points():
+    features = []
+    for index in accident_by_dangerous_points.index:
+        cur = accident_by_dangerous_points.loc[index]
+        features.append(geojson.Feature(geometry=geojson.Point((cur['lng'], cur['lat']))))
+    feature_collection = geojson.FeatureCollection(features)
+    total_features = geojson.dumps(feature_collection)
+    return total_features
+
+
+def get_accident_count_by_roads():
+
+    with open('out/roads.json', 'r') as json_file:
+        feature_collection = geojson.loads(json_file.read())
+
+        for index in range(len(feature_collection.features)):
+            feature = feature_collection.features[index]
+            road_id = feature.properties['id']
+            accident_count = 0
+            accident_result = total_accident_by_road_id[total_accident_by_road_id.keys() == road_id]
+
+            if accident_result.count() > 0:
+                accident_count = accident_result.item()
+            feature.properties['accident_count'] = accident_count
+        return feature_collection
