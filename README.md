@@ -55,4 +55,53 @@ data = json.dumps({
     'total_injured_number': int(total_injured_number)
 })
 ```
-5. 
+
+## 5. Charts Page
+
+### 5.1. Total Accident by Province
+
+This page is provided a place to show charts data as pie chart and bar chart.
+
+```python
+total_Accident_by_province = df.groupby("ProvinceName").road_id.count().sort_values(ascending=False)
+```
+
+### 5.2. Most Collision Shape Title
+
+```python
+most_Collision_Shape_Title = df.groupby("CollisionShapeTitle").CollisionShapeTitle.count()
+```
+
+### 5.3. Total Accident by Road
+
+```python
+total_accident_by_road = df.groupby(["road_search_name"]).road_id.count().sort_values(ascending=False).head(10)
+```
+
+### 5.4. Total Accident by Vehicle Name
+
+Data are grouped by province which related to accident count. The result is shown as a bar chart from `Alrboz`
+province (the highest number of accidents) and `Azarbijan Garbi` province (the lowest number of accidents)`.
+
+```python
+total_accident_by_vehicle_name = df.groupby("VehicleTypeNames").VehicleTypeNames.count().sort_values(
+    ascending=False).head(10)
+```
+
+### 5.5. Total Accident Statistics
+
+```python
+total_accident_statistics = total_accident_by_road.agg({"mean", "median", "std"})
+```
+
+### 5.6 Total Injured Number Statistics
+
+```python
+total_InjuredNumber_statistics = df.InjuredNumber.agg({"mean", "median", "std"})
+```
+
+### 5.7 Total Killed Number Statistics
+
+```python
+total_KilledNumber_statistics = df.KilledNumber.agg({"mean", "median", "std"})
+```
